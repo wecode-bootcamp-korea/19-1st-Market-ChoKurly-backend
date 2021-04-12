@@ -158,7 +158,7 @@ local_settings.py
 my_settings.py
 *.csv
 media
-.idea
+.idea/
 
 
 # C extensions
