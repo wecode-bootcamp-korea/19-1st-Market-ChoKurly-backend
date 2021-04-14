@@ -7,7 +7,7 @@ class User(models.Model):
     email               =   models.CharField(max_length=100)
     phone_number        =   models.CharField(max_length=45)
     birthdate           =   models.CharField(max_length=45)
-    gender              =   models.CharField(max_length=10, choices=(('남','남자'),('여','여자')))
+    gender              =   models.CharField(max_length=10)
     product             =   models.ManyToManyField('products.Product',through = 'UserLike')
     created_at          =   models.DateTimeField(auto_now_add=True)
 
@@ -16,18 +16,18 @@ class User(models.Model):
 
 class Address(models.Model):
     address             =   models.CharField(max_length=500)
-    user                =   models.ForeignKey('User',on_delete=models.CASCADE)
+    user                =   models.ForeignKey('User',on_delete = models.CASCADE)
     is_default          =   models.SmallIntegerField()
 
     class Meta:
         db_table    = 'addresses'
 
 class Review(models.Model):
-    user                =   models.ForeignKey('User', on_delete=models.CASCADE)
+    user                =   models.ForeignKey('User', on_delete = models.CASCADE)
     review              =   models.TextField()
-    order               =   models.ForeignKey('orders.Order', on_delete=models.CASCADE)
+    order               =   models.ForeignKey('orders.Order', on_delete=models.SET_NULL ,null=True)
     created_at          =   models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         db_table    =  'reviews'
 

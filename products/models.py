@@ -2,11 +2,11 @@ from django.db import models
 
 class Product(models.Model):
     name            =   models.CharField(max_length=45)
-    subcategory     =   models.ForeignKey('SubCategory', on_delete=models.CASCADE)
-    stock           =   models.IntegerField()
+    subcategory     =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
+    stock           =   models.PositiveIntegerField()
     price           =   models.DecimalField(max_digits=10, decimal_places=2)
-    discount_rate   =   models.OneToOneField('DiscountRate', on_delete=models.CASCADE)
-    category        =   models.ForeignKey('Category', on_delete=models.CASCADE)
+    discount_rate   =   models.OneToOneField('DiscountRate', on_delete = models.SET_NULL, null=True)
+    category        =   models.ForeignKey('Category', on_delete = models.SET_NULL, null=True)
     created_at      =   models.DateTimeField(auto_now_add=True)
     updated_at      =   models.DateTimeField(auto_now=True)
 
@@ -21,7 +21,7 @@ class Category(models.Model):
 
 class SubCategory(models.Model):
     name            = models.CharField(max_length=45)
-    category        = models.ForeignKey('Category', on_delete = models.CASCADE)
+    category        = models.ForeignKey('Category', on_delete = models.SET_NULL, null=True)
 
     class Meta:
         db_table    = 'subcategories'
@@ -46,15 +46,15 @@ class ProductInformation(models.Model):
         db_table = 'productinformations'
 
 class AllegyProduct(models.Model):
-    allergy             = models.ForeignKey('Allergy', on_delete=models.CASCADE)
-    productinformation  = models.ForeignKey('ProductInformation', on_delete=models.CASCADE)
+    allergy             = models.ForeignKey('Allergy', on_delete = models.CASCADE)
+    productinformation  = models.ForeignKey('ProductInformation', on_delete = models.CASCADE)
 
     class Meta:
         db_table = 'allegyproducts'
 
 class Image(models.Model):
-    img_url         = models.CharField(max_length=500)
-    product         = models.ForeignKey('Product',on_delete=models.CASCADE)
+    image_url       = models.URLField(max_length=2000)
+    product         = models.ForeignKey('Product',on_delete = models.CASCADE)
 
     class Meta:
         db_table    = 'images'
