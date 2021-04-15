@@ -3,7 +3,7 @@ from django.db import models
 class Product(models.Model):
     name            =   models.CharField(max_length=45)
     subcategory     =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
-    stock           =   models.PositiveIntegerField()
+    stock           =   models.PositiveIntegerField(default=0)
     price           =   models.DecimalField(max_digits=10, decimal_places=2)
     discount_rate   =   models.OneToOneField('DiscountRate', on_delete = models.SET_NULL, null=True)
     category        =   models.ForeignKey('Category', on_delete = models.SET_NULL, null=True)
@@ -24,7 +24,7 @@ class SubCategory(models.Model):
     category        = models.ForeignKey('Category', on_delete = models.SET_NULL, null=True)
 
     class Meta:
-        db_table    = 'subcategories'
+        db_table    = 'sub_categories'
 
 class Allergy(models.Model):
     name            = models.CharField(max_length=45)
@@ -43,14 +43,14 @@ class ProductInformation(models.Model):
     allergy         =  models.ManyToManyField('Allergy', through = 'AllergyProduct')
 
     class Meta:
-        db_table = 'productinformations'
+        db_table = 'product_informations'
 
-class AllegyProduct(models.Model):
+class AllergyProduct(models.Model):
     allergy             = models.ForeignKey('Allergy', on_delete = models.CASCADE)
     productinformation  = models.ForeignKey('ProductInformation', on_delete = models.CASCADE)
 
     class Meta:
-        db_table = 'allegyproducts'
+        db_table = 'allegy_products'
 
 class Image(models.Model):
     image_url       = models.URLField(max_length=2000)
@@ -63,5 +63,5 @@ class DiscountRate(models.Model):
     discount_rate   = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
     class Meta:
-        db_table    = 'discountrates'
+        db_table    = 'discount_rates'
 

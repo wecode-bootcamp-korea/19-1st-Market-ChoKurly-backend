@@ -17,7 +17,7 @@ class User(models.Model):
 class Address(models.Model):
     address             =   models.CharField(max_length=500)
     user                =   models.ForeignKey('User',on_delete = models.CASCADE)
-    is_default          =   models.SmallIntegerField()
+    is_default          =   models.BooleanField(default = False)
 
     class Meta:
         db_table    = 'addresses'
@@ -36,7 +36,7 @@ class UserLike(models.Model):
     product             = models.ForeignKey('products.Product', on_delete = models.CASCADE)
 
     class Meta:
-        db_table    =   'userlikes'
+        db_table    =   'user_likes'
 
 class Comment(models.Model):
     review              = models.ForeignKey('Review', on_delete = models.CASCADE)

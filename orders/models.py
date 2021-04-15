@@ -1,7 +1,7 @@
 from django.db import models
 
 class Order(models.Model):
-    total_quantity     =   models.IntegerField(null=True)
+    total_quantity     =   models.IntegerField(default=0)
     shipping_price     =   models.DecimalField(max_digits = 7,decimal_places = 2,null=True)
     user               =   models.ForeignKey('users.User',on_delete = models.CASCADE)
     total_price        =   models.DecimalField(max_digits=10 ,decimal_places = 2,null=True)
@@ -19,18 +19,18 @@ class ShippingMethod(models.Model):
     name               =   models.CharField(max_length=45)
     
     class Meta:
-        db_table       =   'shippingmethods'
+        db_table       =   'shipping_methods'
 
 class OrderStatus(models.Model):
     name              =   models.CharField(max_length=45)
 
     class Meta:
-        db_table     =   'orderstatus'
+        db_table     =   'order_status'
 
 class Cart(models.Model):
     product          =   models.ForeignKey('products.Product', on_delete = models.CASCADE)
     order            =   models.ForeignKey('Order', on_delete= models.CASCADE)
-    quantity         =   models.IntegerField()
+    quantity         =   models.IntegerField(default=0)
 
     class Meta:
         db_table     =  'carts'
@@ -39,4 +39,4 @@ class PaymentType(models.Model):
     name             =   models.CharField(max_length=45)
 
     class Meta:
-        db_table     =  'paymenttypes'
+        db_table     =  'payment_types'
