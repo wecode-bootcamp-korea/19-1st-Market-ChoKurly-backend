@@ -1,28 +1,21 @@
 import json
-import re
-#import bcrypt
-#import jwt
-#import string
-#import random
+import my_settings
 
 from django.views         import View
 from django.http          import JsonResponse
 from django.db.models     import Q
-#from django.core.mail     import EmailMessage
 
 from users.models         import User, Address, Review, UserLike, Comment
 
-
 class FindIdView(View):
     def post(self, request):
-        data = json.loads(request.body)
-        email_check = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
         try:
+            data  = json.loads(request.body)
             name  = data['name']
             email = data['email']
 
-            if not email_check.match(email):
+            if not my_settings.EMAIL_CHECK.match(email):
                 return JsonResponse({'MESSAGE':'EMAIL_TYPE_ERROR'}, status=400)
 
             if not User.objects.filter(Q(name=name) & Q(email=email)).exists():
@@ -34,6 +27,12 @@ class FindIdView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'MESSAGE':'JSON_Decode_Error'}, status=400)
+
+
+
+
 
 
 
