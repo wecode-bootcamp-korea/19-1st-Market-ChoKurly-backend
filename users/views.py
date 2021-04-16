@@ -1,22 +1,16 @@
 import json
-
 import bcrypt
-
 import jwt
-
 import my_settings
 
 from django.db          import transaction
-
 from django.http        import JsonResponse
-
 from django.views       import View
 
 from .models            import User, Address
 
 class UserView(View):
     def post(self, request):
-
         try:
             data                 = json.loads(request.body)
             LENGTH               = 0
@@ -30,47 +24,36 @@ class UserView(View):
             address              = data['address']
 
             if len(name) <= LENGTH:
-
                 return JsonResponse({'MESSAGE':'NAME_ERRROR'}, status=400)
 
             if len(birth_date) <= LENGTH:
-
                 return JsonResponse({'MESSAGE':'BIRTHDATE_ERRROR'}, status=400)
 
             if len(gender) <= LENGTH:
-
                 return JsonResponse({'MESSAGE':'GENDER_ERRROR'}, status=400)
 
             if len(address) <= LENGTH:
-
                return JsonResponse({'MESSAGE':'ADDRESS_INPUT_ERROR'}, status=400)
 
             if not my_settings.identification_check.match(identification):
-
                 return JsonResponse({'MESSAGE':'INVALID_ID_ERROR'}, status=400)
 
             if not my_settings.password_check.match(password):
-
                 return JsonResponse({'MESSAGE':'INVALID_PW_ERROR'}, status=400)
                 
             if not my_settings.email_check.match(email):
-
                 return JsonResponse({'MESSAGE':'INVALID_EMAIL_ERROR'}, status=400)
             
             if not my_settings.phone_check.match(phone_number):
-
                 return JsonResponse({'MESSAGE':'INVALID_PHONENUMBER'}, status=400)
 
             if User.objects.filter(identification = identification).exists():
-
                 return JsonResponse({'MESSAGE':'ID_DUPLICATE_ERROR'}, status=400)
                 
             if User.objects.filter(phone_number = phone_number).exists():
-
                 return JsonResponse({'MESSSAGE':'PHONE_NUMBER_DUPLICATE_ERROR'}, status=400)
 
             if User.objects.filter(email = email).exists():
-
                 return JsonResponse({'MESSSAGE':'EMAIL_DUPLICATE_ERROR'}, status=401)
 
             with transaction.atomic():
@@ -83,8 +66,6 @@ class UserView(View):
                             phone_number   = phone_number ,
                             birthdate      = birth_date ,
                             gender         = gender )
-
-                user.save()
 
                 user_address = Address.objects.create(
                             address     = address,
@@ -99,26 +80,4 @@ class UserView(View):
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
 
 
-class LoginView(View):
 
-    def post(self, request):
-
-        try:
-
-            data                 =  json.loads(request.body)
-            password             =  data['password']
-            identification       =  User.objects.filter(identification = data['id']).first()
-            
-            if not identification:
-
-                return JsonResponse({'MESSAGE':'INVALID_ID_ERROR'}, status=401)
-        
-            if not bcrypt.checkpw(password.encode('utf-8'), identification.password.encode('utf-8') ):
-
-                return JsonResponse({'MESSAGE':'INVALID_PW_ERROR'}, status=401)
-            
-            encoded_jwt = jwt.encode({'user id': identification.id}, my_settings.SECRET['secret'], algorithm = 'HS256')
-            return JsonResponse({'MESSAGE':'SUCCESS','TOKEN': encoded_jwt}, status = 200)
-
-        except KeyError:
-            return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
