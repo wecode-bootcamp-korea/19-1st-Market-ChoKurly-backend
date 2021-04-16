@@ -1,14 +1,25 @@
-import json, re, bcrypt, jwt
-from .models            import User, Address
-from django.db.models   import Q
+import json
+
+import bcrypt
+
+import jwt
+
+import my_settings
+
+from django.db          import transaction
+
 from django.http        import JsonResponse
+
 from django.views       import View
+
+from .models            import User, Address
 
 class UserView(View):
     def post(self, request):
 
         try:
             data                 = json.loads(request.body)
+            LENGTH               = 0
             identification       = data['id']
             password             = data['password']
             name                 = data['name']
@@ -17,41 +28,36 @@ class UserView(View):
             birth_date           = data['birthdate']
             gender               = data['gender']
             address              = data['address']
-            phone_check          = re.compile('^[0-9]{3}[0-9]{3,4}[0-9]{4}')
-            identification_check = re.compile('^[0-9a-zA-Z]{6,16}$')
-            password_check       = re.compile('^(?=.*[a-zA-Z0-9])(?=.*[a-zA-Z!@#$%^&*])(?=.*[0-9!@#$%^&*]).{10,16}$')
-            email_check          = re.compile('^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$')
 
-
-            if len(name) <= 0:
+            if len(name) <= LENGTH:
 
                 return JsonResponse({'MESSAGE':'NAME_ERRROR'}, status=400)
 
-            if len(birth_date) <= 0:
+            if len(birth_date) <= LENGTH:
 
                 return JsonResponse({'MESSAGE':'BIRTHDATE_ERRROR'}, status=400)
 
-            if len(gender) <= 0:
+            if len(gender) <= LENGTH:
 
                 return JsonResponse({'MESSAGE':'GENDER_ERRROR'}, status=400)
 
-            if len(address) <= 0:
+            if len(address) <= LENGTH:
 
-                return JsonResponse({'MESSAGE':'ADDRESS_INPUT_ERROR'}, status=400)
+               return JsonResponse({'MESSAGE':'ADDRESS_INPUT_ERROR'}, status=400)
 
-            if not identification_check.match(identification):
+            if not my_settings.identification_check.match(identification):
 
                 return JsonResponse({'MESSAGE':'INVALID_ID_ERROR'}, status=400)
 
-            if not password_check.match(password):
+            if not my_settings.password_check.match(password):
 
                 return JsonResponse({'MESSAGE':'INVALID_PW_ERROR'}, status=400)
                 
-            if not email_check.match(email):
+            if not my_settings.email_check.match(email):
 
                 return JsonResponse({'MESSAGE':'INVALID_EMAIL_ERROR'}, status=400)
             
-            if not phone_check.match(phone_number):
+            if not my_settings.phone_check.match(phone_number):
 
                 return JsonResponse({'MESSAGE':'INVALID_PHONENUMBER'}, status=400)
 
@@ -67,11 +73,9 @@ class UserView(View):
 
                 return JsonResponse({'MESSSAGE':'EMAIL_DUPLICATE_ERROR'}, status=401)
 
-            
-            if bcrypt.hashpw( password.encode('utf-8'),  bcrypt.gensalt() ):
-                hashed_pw = bcrypt.hashpw( password.encode('utf-8'),  bcrypt.gensalt() )
-                
-                User.objects.create(
+            with transaction.atomic():
+                hashed_pw = bcrypt.hashpw( password.encode('utf-8'),  bcrypt.gensalt() )    
+                user = User.objects.create(
                             identification = identification ,
                             password       = hashed_pw.decode('utf-8') ,
                             name           = name ,
@@ -80,16 +84,41 @@ class UserView(View):
                             birthdate      = birth_date ,
                             gender         = gender )
 
-                
-                user = User.objects.get(identification = identification)
+                user.save()
 
-                Address.objects.create(
+                user_address = Address.objects.create(
                             address     = address,
                             user        = user,
-                            is_default  = 1)
+                            is_default  = data['is_defalut'])
+
+                user_address.save()
 
                 return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
+        except KeyError:
+            return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
+
+
+class LoginView(View):
+
+    def post(self, request):
+
+        try:
+
+            data                 =  json.loads(request.body)
+            password             =  data['password']
+            identification       =  User.objects.filter(identification = data['id']).first()
             
+            if not identification:
+
+                return JsonResponse({'MESSAGE':'INVALID_ID_ERROR'}, status=401)
+        
+            if not bcrypt.checkpw(password.encode('utf-8'), identification.password.encode('utf-8') ):
+
+                return JsonResponse({'MESSAGE':'INVALID_PW_ERROR'}, status=401)
+            
+            encoded_jwt = jwt.encode({'user id': identification.id}, my_settings.SECRET['secret'], algorithm = 'HS256')
+            return JsonResponse({'MESSAGE':'SUCCESS','TOKEN': encoded_jwt}, status = 200)
+
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
