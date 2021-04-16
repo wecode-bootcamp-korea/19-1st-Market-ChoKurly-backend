@@ -20,7 +20,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = my_settings.SECRET['secret']
+SECRET_KEY = my_settings.SECRET_KEY
+
+
+# EMAIL
+EMAIL_BACKEND       = my_settings.EMAIL_BACKEND
+EMAIL_HOST          = my_settings.EMAIL_HOST	      # 메일 호스트 서버
+EMAIL_PORT          = my_settings.EMAIL_PORT	      # 서버 포트
+EMAIL_HOST_USER     = my_settings.EMAIL_HOST_USER	  # 우리가 사용할 Gmail
+EMAIL_HOST_PASSWORD = my_settings.EMAIL_HOST_PASSWORD # 우리가 사용할 Gmail p
+EMAIL_USE_TLS       = my_settings.EMAIL_USE_TLS	      # TLS 보안 설정
+DEFAULT_FROM_EMAIL  = my_settings.DEFAULT_FROM_EMAIL
+# #SERVER_EMAIL        = my_settings.SERVER_EMAIL
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,9 +49,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+<<<<<<< HEAD
     'orders',
     'users',
     'products',
+=======
+    'users',
+    'products',
+    'orders',
+
+>>>>>>> main
 ]
 
 MIDDLEWARE = [
