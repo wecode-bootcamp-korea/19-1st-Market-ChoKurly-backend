@@ -35,7 +35,6 @@ class FindIdView(View):
         except json.JSONDecodeError:
             return JsonResponse({'MESSAGE':'JSON_Decode_Error'}, status=400)
 
-
 class UserView(View):
     def post(self, request):
         try:
@@ -105,11 +104,3 @@ class UserView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
-
-
-
-
-
-
-
-
