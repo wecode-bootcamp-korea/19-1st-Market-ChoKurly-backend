@@ -1,8 +1,8 @@
 from django.urls import path
 
-from users.views import FindIdView, FindPwView
+from users.views import FindIdView, FindPasswordView
 
 urlpatterns = [
-    path('/findid', FindIdView.as_view()),
-    path('/findpw',  FindPwView.as_view()),
+    path('/find-id', FindIdView.as_view()),
+    path('/find-password',  FindPasswordView.as_view()),
 ]

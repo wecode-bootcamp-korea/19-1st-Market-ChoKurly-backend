@@ -34,29 +34,35 @@ class FindIdView(View):
         except json.JSONDecodeError:
             return JsonResponse({'MESSAGE':'JSON_Decode_Error'}, status=400)
 
-class FindPwView(View):
-    def post(self, request):
-        data = json.loads(request.body)
-        length = 8
+class RandomChoices:
+    def random_choices():
+        length      = 8
         string_pool = string.ascii_letters + string.digits
-        auth_num = ''
+        auth_num    = ''
 
         for i in range(length):
             auth_num += random.choice(string_pool)
 
+        return auth_num
+
+class FindPasswordView(View):
+    def post(self, request):
+        data     = json.loads(request.body)
+        auth_num = RandomChoices.random_choices()
+
         try:
-            name = data['name']
+            name           = data['name']
             identification = data['identification']
-            email = data['email']
+            email          = data['email']
 
             if not User.objects.filter(Q(name=name) & Q(identification=identification) & Q(email=email)).exists():
-                return JsonResponse({'MESSAGE':'INVALID_NAME OR IDENTIFICATION OR EMAIL'})
+                return JsonResponse({'MESSAGE':'INVALID_USER'}, status=400)
 
-            salt = bcrypt.gensalt()
+            salt            = bcrypt.gensalt()
             hashed_password = bcrypt.hashpw(auth_num.encode('utf-8'), salt)
             hashed_password = hashed_password.decode('utf-8')
 
-            user = User.objects.get(email=email)
+            user          = User.objects.get(email=email)
             user.password = hashed_password
             user.save()
 
@@ -67,7 +73,6 @@ class FindPwView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
-
 
 
 
