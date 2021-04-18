@@ -2,6 +2,8 @@ import bcrypt
 import jwt
 import my_settings
 import json
+import string
+import random
 
 from django.http import JsonResponse
 from django.views import View
@@ -9,6 +11,7 @@ from django.db import transaction
 from django.views import View
 from django.http import JsonResponse
 from django.db.models import Q
+from django.core.mail     import EmailMessage
 
 from users.models import User, Address, Review, UserLike, Comment
 
@@ -106,3 +109,42 @@ class UserView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
+
+class FindPasswordView(View):
+    def random_choices(self):
+        length      = 8
+        string_pool = string.ascii_letters + string.digits
+        auth_num    = ''
+
+        for i in range(length):
+            auth_num += random.choice(string_pool)
+
+        return auth_num
+
+    def post(self, request):
+        data     = json.loads(request.body)
+        auth_num = self.random_choices()
+
+        try:
+            name = data['name']
+            identification = data['identification']
+            email = data['email']
+
+            if not User.objects.filter(Q(name=name) & Q(identification=identification) & Q(email=email)).exists():
+                return JsonResponse({'MESSAGE':'INVALID_USER'}, status=400)
+
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(auth_num.encode('utf-8'), salt)
+            hashed_password = hashed_password.decode('utf-8')
+
+            user = User.objects.get(email=email)
+            user.password = hashed_password
+            user.save()
+
+            email = EmailMessage('[CHOKURLY] 이메일 인증번호', auth_num, to=[email])
+            email.send()
+
+            return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
