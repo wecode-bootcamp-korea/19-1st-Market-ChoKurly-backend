@@ -148,3 +148,22 @@ class FindPasswordView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
+
+class LoginView(View):
+    def post(self, request):
+        try:
+            data                 =  json.loads(request.body)
+            password             =  data['password']
+            identification       =  User.objects.filter(identification = data['id']).first()
+            
+            if not identification:
+                return JsonResponse({'MESSAGE':'INVALID_ID_ERROR'}, status=401)
+        
+            if not bcrypt.checkpw(password.encode('utf-8'), identification.password.encode('utf-8') ):
+                return JsonResponse({'MESSAGE':'INVALID_PW_ERROR'}, status=401)
+            
+            encoded_jwt = jwt.encode({'user id': identification.id}, my_settings.SECRET['secret'], algorithm = 'HS256')
+            return JsonResponse({'MESSAGE':'SUCCESS','TOKEN': encoded_jwt}, status = 200)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
