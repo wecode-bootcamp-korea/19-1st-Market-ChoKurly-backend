@@ -1,7 +1,12 @@
 from django.views    import View
 from django.http     import JsonResponse
 
-from products.models import Product, Category, SubCategory, Allergy, ProductInformation, AllergyProduct, Image, DiscountRate
+from products.models import (
+    Product, Category,
+    SubCategory, Allergy,
+    ProductInformation,
+    AllergyProduct, Image,
+    DiscountRate)
 
 class CategoryView(View):
     def get(self, request):
