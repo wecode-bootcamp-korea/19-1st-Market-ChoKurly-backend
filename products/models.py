@@ -1,16 +1,18 @@
 from django.db import models
 
 class Product(models.Model):
-    name            =   models.CharField(max_length=45)
-    sub_category     =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
-    stock           =   models.PositiveIntegerField(default=0)
-    price           =   models.DecimalField(max_digits=10, decimal_places=2)
-    discount_rate   =   models.ForeignKey('DiscountRate', on_delete = models.SET_NULL, null=True)
-    category        =   models.ForeignKey('Category', on_delete = models.SET_NULL, null=True)
-    thumbnail_image =   models.URLField(max_length=2000)
-    sticker         =   models.ForeignKey('Sticker', on_delete = models.SET_NULL, null=True)
-    created_at      =   models.DateTimeField(auto_now_add=True)
-    updated_at      =   models.DateTimeField(auto_now=True)
+    name              =   models.CharField(max_length=45)
+    sub_category      =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
+    stock             =   models.PositiveIntegerField(default=0)
+    price             =   models.DecimalField(max_digits=10, decimal_places=2)
+    discount_rate     =   models.ForeignKey('DiscountRate', on_delete = models.SET_NULL, null=True)
+    category          =   models.ForeignKey('Category', on_delete = models.SET_NULL, null=True)
+    thumbnail_image   =   models.URLField(max_length=2000)
+    description_image =   models.URLField(max_length=2000, null=True)
+    size_image        =   models.URLField(max_length=2000, null=True)
+    sticker           =   models.ForeignKey('Sticker', on_delete = models.SET_NULL, null=True)
+    created_at        =   models.DateTimeField(auto_now_add=True)
+    updated_at        =   models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table    = 'products'
@@ -48,19 +50,11 @@ class ProductInformation(models.Model):
         db_table = 'product_informations'
 
 class AllergyProduct(models.Model):
-    allergy             = models.ForeignKey('Allergy', on_delete = models.CASCADE)
+    allergy              = models.ForeignKey('Allergy', on_delete = models.CASCADE)
     product_information  = models.ForeignKey('ProductInformation', on_delete = models.CASCADE)
 
     class Meta:
-        db_table = 'allegy_products'
-
-class Image(models.Model):
-    image_url       = models.URLField(max_length=2000)
-    image_type      = models.CharField(max_length=45)
-    product         = models.ForeignKey('Product',on_delete = models.CASCADE)
-
-    class Meta:
-        db_table    = 'images'
+        db_table = 'allergy_products'
 
 class DiscountRate(models.Model):
     discount_rate   = models.DecimalField(max_digits=10, decimal_places=2, null=True)
