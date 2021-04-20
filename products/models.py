@@ -2,7 +2,7 @@ from django.db import models
 
 class Product(models.Model):
     name            =   models.CharField(max_length=45)
-    sub_category     =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
+    sub_category    =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
     stock           =   models.PositiveIntegerField(default=0)
     price           =   models.DecimalField(max_digits=10, decimal_places=2)
     discount_rate   =   models.ForeignKey('DiscountRate', on_delete = models.SET_NULL, null=True)
