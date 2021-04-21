@@ -176,9 +176,9 @@ class SignupCheckView(View):
             identification      = data.get('id','')
 
             if not User.objects.filter(Q(identification = identification)| Q(email = email)).exists():
-                return JsonResponse({'MESSAGE':True})
+                return JsonResponse({'MESSAGE':True}, status=200)
                 
-            return JsonResponse({'MESSAGE':False})
+            return JsonResponse({'MESSAGE':False}, status=200)
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
