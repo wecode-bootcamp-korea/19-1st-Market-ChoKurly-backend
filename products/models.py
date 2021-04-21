@@ -1,6 +1,7 @@
 from django.db import models
 
 class Product(models.Model):
+<<<<<<< HEAD
     name              =   models.CharField(max_length=45)
     sub_category      =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
     stock             =   models.PositiveIntegerField(default=0)
@@ -13,6 +14,18 @@ class Product(models.Model):
     sticker           =   models.ForeignKey('Sticker', on_delete = models.SET_NULL, null=True)
     created_at        =   models.DateTimeField(auto_now_add=True)
     updated_at        =   models.DateTimeField(auto_now=True)
+=======
+    name            =   models.CharField(max_length=45)
+    sub_category    =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
+    stock           =   models.PositiveIntegerField(default=0)
+    price           =   models.DecimalField(max_digits=10, decimal_places=2)
+    discount_rate   =   models.ForeignKey('DiscountRate', on_delete = models.SET_NULL, null=True)
+    category        =   models.ForeignKey('Category', on_delete = models.SET_NULL, null=True)
+    thumbnail_image =   models.URLField(max_length=2000)
+    sticker         =   models.ForeignKey('Sticker', on_delete = models.SET_NULL, null=True)
+    created_at      =   models.DateTimeField(auto_now_add=True)
+    updated_at      =   models.DateTimeField(auto_now=True)
+>>>>>>> main
 
     class Meta:
         db_table    = 'products'
