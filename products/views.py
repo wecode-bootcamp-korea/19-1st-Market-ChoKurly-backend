@@ -14,7 +14,7 @@ class CategoryView(View):
     def get(self, request):
         categories = Category.objects.all()
 
-        RESULTS = [
+        results = [
             {
                 'id'          : category.id,
                 'category'    : category.name,
@@ -24,7 +24,7 @@ class CategoryView(View):
                 } for subcategory in category.subcategory_set.all()]
             } for category in categories]
 
-        return JsonResponse({'RESULTS': RESULTS}, status=200)
+        return JsonResponse({'RESULTS': results}, status=200)
 
 class ProductListView(View):
     def get(self,request):
@@ -43,7 +43,7 @@ class ProductListView(View):
         if sub_category_id:
             products = Product.objects.filter(sub_category_id=sub_category_id).order_by(order_by_type)[start:end]
 
-        RESULTS = [{
+        results = [{
 
             "id": product.id,
             "name": product.name,
@@ -56,7 +56,7 @@ class ProductListView(View):
 
         } for product in products]
 
-        return JsonResponse({'RESULTS':RESULTS}, status=200)
+        return JsonResponse({'RESULTS':results}, status=200)
 
 class SearchView(View):
     def get(self,request):
@@ -67,7 +67,7 @@ class SearchView(View):
 
         products = Product.objects.filter(name__icontains=search_content)
 
-        RESULTS = [
+        results = [
             {
                 "id": product.id,
                 "name": product.name,
@@ -80,5 +80,4 @@ class SearchView(View):
 
             } for product in products]
 
-        return JsonResponse({'RESULTS':RESULTS}, status=200)
-
+        return JsonResponse({'RESULTS':results}, status=200)
