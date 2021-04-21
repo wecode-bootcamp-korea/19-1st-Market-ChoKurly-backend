@@ -55,7 +55,7 @@ class ProductListView(View):
 
         } for product in products]
 
-        return JsonResponse({'RESULTS':RESULTS}, status=200)
+        return JsonResponse({'RESULTS':results}, status=200)
 
 
 class ProductDetailView(View):
@@ -118,4 +118,29 @@ class ProductDetailView(View):
             'rel_img'    : picked_related_products[index].thumbnail_image,
         } for index in range(len(picked_related_products))]
         return result
+
+class SearchView(View):
+    def post(self,request):
+        search_content = request.GET.get('search_content',None)
+        products = Product.objects.filter(name__icontains=search_content)
+
+        if not search_content:
+            return JsonResponse({'MESSAGE':'INVALID_CONTENT'}, status=400)
+
+        results = [
+            {
+                "id": product.id,
+                "name": product.name,
+                "original_price": int(product.price),
+                "discount_rate": float(product.discount_rate.discount_rate) if product.discount_rate else None,
+                "discounted_price": int(product.price - (product.price * product.discount_rate.discount_rate)) if product.discount_rate else None,
+                "thumbnail_image": product.thumbnail_image,
+                "sticker": product.sticker.name if product.sticker else None,
+                "comment":product.productinformation.comment
+
+            } for product in products]
+
+        return JsonResponse({'RESULTS':results}, status=200)
+
+
 
