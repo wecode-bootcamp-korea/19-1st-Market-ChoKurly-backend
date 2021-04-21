@@ -30,7 +30,7 @@ class ProductView(View):
         product_count = int(request.GET.get('product_count', 7))
         products      = Product.objects.order_by(section_type)[:product_count]
 
-        results = [{
+        RESULTS = [{
 
             "id": product.id,
             "name": product.name,
@@ -42,4 +42,4 @@ class ProductView(View):
 
         } for product in products]
 
-        return JsonResponse({'results':results}, status=200)
+        return JsonResponse({'RESULTS':RESULTS}, status=200)
