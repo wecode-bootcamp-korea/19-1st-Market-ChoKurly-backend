@@ -12,8 +12,7 @@ class OrderformView(View):
     @login_required
     def get(self, request):
         if Order.objects.filter(Q(user_id = request.user) & Q(order_status_id = 1) | Q(order_status_id = 2)).exists():
-            ordercheck   = Order.objects.get(user_id = request.user)  
-            user         = User.objects.get(id = request.user)
+            ordercheck   = Order.objects.get(user_id = request.user)
             
             if ordercheck.total_price > 10000.00:
                 ordercheck.shipping_price = None
@@ -30,10 +29,10 @@ class OrderformView(View):
 
             result=[{
                 'order_product':products,
-                'user_name': user.name,
-                'user_phone':user.phone_number,
-                'user_email':user.email,
-                'user_address': user.address_set.get(is_default=1).address,
+                'user_name': request.user.name,
+                'user_phone':request.user.phone_number,
+                'user_email':request.user.email,
+                'user_address': request.user.address_set.get(is_default=1).address,
                 'shipping_price': ordercheck.shipping_price
                 } ]
 
