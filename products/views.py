@@ -55,7 +55,8 @@ class ProductListView(View):
 
         } for product in products]
 
-        return JsonResponse({'RESULTS':results}, status=200)
+        return JsonResponse({'RESULTS':RESULTS}, status=200)
+
 
 class ProductDetailView(View):
     def get(self, request, product_id=None):
