@@ -120,9 +120,9 @@ class ProductDetailView(View):
         return result
 
 class SearchView(View):
-    def post(self,request):
+    def get(self,request):
         search_content = request.GET.get('search_content',None)
-        products = Product.objects.filter(name__icontains=search_content)
+        products       = Product.objects.filter(name__icontains=search_content)
 
         if not search_content:
             return JsonResponse({'MESSAGE':'INVALID_CONTENT'}, status=400)
