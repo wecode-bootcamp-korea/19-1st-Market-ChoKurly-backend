@@ -25,7 +25,8 @@ class Address(models.Model):
 class Review(models.Model):
     user                =   models.ForeignKey('User', on_delete = models.CASCADE)
     review              =   models.TextField()
-    order               =   models.ForeignKey('orders.Order', on_delete=models.SET_NULL ,null=True)
+    order               =   models.ForeignKey('orders.Order', on_delete = models.SET_NULL ,null=True)
+    product             =   models.ForeignKey('products.Product', on_delete = models.CASCADE)
     created_at          =   models.DateTimeField(auto_now_add=True)
 
     class Meta:
