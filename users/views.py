@@ -12,6 +12,11 @@ from django.db.models import Q
 from django.core.mail import EmailMessage
 
 from users.models     import User, Address, Review, UserLike, Comment
+from products.models  import (
+    Product,Category,
+    SubCategory,Allergy,
+    ProductInformation,AllergyProduct,
+    DiscountRate,Sticker)
 from users.decorators import login_required
 
 
@@ -184,51 +189,49 @@ class SignupCheckView(View):
 
 class ReviewView(View):
     @login_required
-    def post(self,request):
-        result=False
+    def post(self,request,product_id):
+        result = False
 
         try:
-            data       = json.loads(request.body)
-            comment    = data['comment']
-            product_id = data['product_id']
-            user       = request.user
-            orders     = user.order_set.filter(order_status_id=3)
+            data   = json.loads(request.body)
+            review = data['review']
+            user   = request.user
+            orders = user.order_set.filter(order_status_id=3)
 
-            if not comment:
-                return JsonResponse({'MESSAGE':'INVALID_COMMENT'},status=400)
+            if not review:
+                return JsonResponse({'MESSAGE':'INVALID_REVIEW'},status=400)
 
             if not orders:
                 return JsonResponse({'MESSAGE':'INVALID_USER'},status=400)
 
             for order in orders:
                 if order.cart_set.filter(product_id=product_id).exists():
-                    result=True
+                    result = True
                     break
 
             if not result:
                 return JsonResponse({'MESSAGE':'INVALID_USER'}, status=400)
 
             Review.objects.create(
-                user   =user,
-                review =comment,
-                order  =order
+                user   = user,
+                review = review,
+                order  = order
             )
 
             return JsonResponse({'MESSAGE':'SUCCESS'},status=200)
 
         except json.JSONDecodeError:
-            return JsonResponse({'MESSAGE':'JSON_Decode_Error'}, status=400)
+            return JsonResponse({'MESSAGE':'JSON_DECODE_ERROR'}, status=400)
 
         except KeyError:
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
 
-    def get(self,request):
-        product_id = request.GET.get('product_id',None)
+    def get(self,request,product_id):
 
         if not product_id:
             return JsonResponse({'MESSAGE':'INVALID_PRODUCT_ID'}, status=400)
 
-        reviews    = Review.objects.filter(product_id_id=product_id)
+        reviews = Review.objects.filter(product_id=product_id)
 
         results = [
             {
@@ -239,3 +242,23 @@ class ReviewView(View):
             } for review in reviews]
 
         return JsonResponse({'RESULTS':results}, status=200)
+
+    @login_required
+    def delete(self,request,product_id):
+
+        try:
+            data         = json.loads(request.body)
+            review_id    = data['review_id']
+            user         = request.user
+            review_check = Review.objects.filter(id=review_id, user=user).exists()
+
+            if not review_check:
+                return JsonResponse({'MESSAGE':'INVALID_REQUEST'}, status=400)
+
+            Review.objects.filter(id=review_id, user=user).delete()
+
+            return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'MESSAGE':'JSON_DECODE_ERROR'}, status=400)
+
