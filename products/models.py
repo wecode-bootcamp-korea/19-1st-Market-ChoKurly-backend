@@ -2,11 +2,13 @@ from django.db import models
 
 class Product(models.Model):
     name            =   models.CharField(max_length=45)
-    subcategory     =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
+    sub_category     =   models.ForeignKey('SubCategory', on_delete = models.SET_NULL, null=True)
     stock           =   models.PositiveIntegerField(default=0)
     price           =   models.DecimalField(max_digits=10, decimal_places=2)
-    discount_rate   =   models.OneToOneField('DiscountRate', on_delete = models.SET_NULL, null=True)
+    discount_rate   =   models.ForeignKey('DiscountRate', on_delete = models.SET_NULL, null=True)
     category        =   models.ForeignKey('Category', on_delete = models.SET_NULL, null=True)
+    thumbnail_image =   models.URLField(max_length=2000)
+    sticker         =   models.ForeignKey('Sticker', on_delete = models.SET_NULL, null=True)
     created_at      =   models.DateTimeField(auto_now_add=True)
     updated_at      =   models.DateTimeField(auto_now=True)
 
@@ -47,13 +49,14 @@ class ProductInformation(models.Model):
 
 class AllergyProduct(models.Model):
     allergy             = models.ForeignKey('Allergy', on_delete = models.CASCADE)
-    productinformation  = models.ForeignKey('ProductInformation', on_delete = models.CASCADE)
+    product_information  = models.ForeignKey('ProductInformation', on_delete = models.CASCADE)
 
     class Meta:
         db_table = 'allegy_products'
 
 class Image(models.Model):
     image_url       = models.URLField(max_length=2000)
+    image_type      = models.CharField(max_length=45)
     product         = models.ForeignKey('Product',on_delete = models.CASCADE)
 
     class Meta:
@@ -65,3 +68,8 @@ class DiscountRate(models.Model):
     class Meta:
         db_table    = 'discount_rates'
 
+class Sticker(models.Model):
+    name            = models.CharField(max_length=45)
+
+    class Meta:
+        db_table    = 'stickers'
