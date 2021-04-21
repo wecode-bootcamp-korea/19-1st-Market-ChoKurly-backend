@@ -24,7 +24,7 @@ class OrderformView(View):
                 'product_quantity': product.quantity,
                 'product_thumbnail_image': product.product.thumbnail_image,
                 'product_price': int(product.product.price),
-                'product_discount_price': int(product.product.price - ( product.product.discount_rate.discount_rate * product.product.price if product.product.discount_rate.discount_rate is not None else None)),
+                'product_discount_price': int(product.product.price - ( product.product.discount_rate.discount_rate * product.product.price if product.product.discount_rate.discount_rate else None)),
             }for product in ordercheck.cart_set.all()]
 
             result=[{
