@@ -13,7 +13,7 @@ class CategoryView(View):
     def get(self, request):
         categories = Category.objects.all()
 
-        RESULTS = [
+        results = [
             {
                 'id'          : category.id,
                 'category'    : category.name,
@@ -23,7 +23,7 @@ class CategoryView(View):
                 } for subcategory in category.subcategory_set.all()]
             } for category in categories]
 
-        return JsonResponse({'RESULTS': RESULTS}, status=200)
+        return JsonResponse({'RESULTS': results}, status=200)
 
 class ProductListView(View):
     def get(self,request):
@@ -42,7 +42,7 @@ class ProductListView(View):
         if sub_category_id:
             products = Product.objects.filter(sub_category_id=sub_category_id).order_by(order_by_type)[start:end]
 
-        RESULTS = [{
+        results = [{
 
             "id": product.id,
             "name": product.name,
@@ -55,7 +55,8 @@ class ProductListView(View):
 
         } for product in products]
 
-        return JsonResponse({'RESULTS':RESULTS}, status=200)
+        return JsonResponse({'RESULTS':results}, status=200)
+
 
 class ProductDetailView(View):
     def get(self, request, product_id=None):
@@ -117,3 +118,29 @@ class ProductDetailView(View):
             'rel_img'    : picked_related_products[index].thumbnail_image,
         } for index in range(len(picked_related_products))]
         return result
+
+class SearchView(View):
+    def get(self,request):
+        search_content = request.GET.get('search_content',None)
+        products       = Product.objects.filter(name__icontains=search_content)
+
+        if not search_content:
+            return JsonResponse({'MESSAGE':'INVALID_CONTENT'}, status=400)
+
+        results = [
+            {
+                "id": product.id,
+                "name": product.name,
+                "original_price": int(product.price),
+                "discount_rate": float(product.discount_rate.discount_rate) if product.discount_rate else None,
+                "discounted_price": int(product.price - (product.price * product.discount_rate.discount_rate)) if product.discount_rate else None,
+                "thumbnail_image": product.thumbnail_image,
+                "sticker": product.sticker.name if product.sticker else None,
+                "comment":product.productinformation.comment
+
+            } for product in products]
+
+        return JsonResponse({'RESULTS':results}, status=200)
+
+
+
