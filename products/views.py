@@ -1,4 +1,3 @@
-import json
 import random
 
 from django.views    import View
@@ -56,21 +55,25 @@ class ProductListView(View):
 
         } for product in products]
 
-<<<<<<< HEAD
-        return JsonResponse({'results':results}, status=200)
+        return JsonResponse({'RESULTS':RESULTS}, status=200)
 
 class ProductDetailView(View):
-    def get(self, request, product_id):
-        product                 = Product.objects.get(id=product_id)
-        product_info            = product.productinformation
-        allergy_info            = AllergyProduct.objects.filter(
-            product_information=product_info.id
-        )
+    def get(self, request, product_id=None):
+        if not product_id:
+            return JsonResponse({'message':'ENTER product_id'}, status=400)
+
+        product                 = Product.objects.filter(id=product_id).first()
+
+        if not product:
+            return JsonResponse({'message':'UNKNOWN_PRODUCT'}, status=400)
         
+        product_info            = product.productinformation
+
         allergy_list            = [{
-            'id'      : '{}'.format(index+1),
-            'allergy' : allergy_info[index].allergy.name
-        } for index in range(len(allergy_info))]
+            'id'        : '{}'.format(index+1),
+            'allergy_id': product_info.allergy.all()[index].id,
+            'allergy'   : product_info.allergy.all()[index].name, 
+        } for index in range(len(product_info.allergy.all()))]
 
         picked_related_products = self.pick_related_product([
             related_product for related_product in Product.objects.all()
@@ -80,6 +83,7 @@ class ProductDetailView(View):
 #
         result                  = [{
             'id'                : "1",
+            'product_id'        : product.id,
             'discount_rate'     : float(product.discount_rate.discount_rate), # 할인율
             'name'              : product.name,                               # 상품명
             'comment'           : product_info.comment,                       # 상품 코멘트
@@ -96,8 +100,8 @@ class ProductDetailView(View):
             'size_image'        : product.size_image,                         # 상품 size_image
             'related_products'  : related_product_list,                       # 관련 상품
             }]
-        
-        return JsonResponse({'result' : result}, status=200)
+
+        return JsonResponse({'result':result}, status=200)
 
     def pick_related_product(self, info):
         random.shuffle(info)
@@ -106,12 +110,10 @@ class ProductDetailView(View):
 
     def make_related_product_list(self, picked_related_products):
         result           = [{
-            'id' : '{}'.format(index+1),
-            'name' : picked_related_products[index].name,
-            'price': int(picked_related_products[index].price),
-            'rel_img': picked_related_products[index].thumbnail_image,
+            'id'         : '{}'.format(index+1),
+            'product_id' : picked_related_products[index].id,
+            'name'       : picked_related_products[index].name,
+            'price'      : int(picked_related_products[index].price),
+            'rel_img'    : picked_related_products[index].thumbnail_image,
         } for index in range(len(picked_related_products))]
         return result
-=======
-        return JsonResponse({'RESULTS':RESULTS}, status=200)
->>>>>>> main
