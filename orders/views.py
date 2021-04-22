@@ -88,6 +88,61 @@ class BasketView(View):
         }]
         return JsonResponse({'result' : result}, status=200)
 
+    @login_required
+    def post(self, request):
+        try:
+            data               = json.loads(request.body)
+            product_id         = data['product_id']
+            shipping_method_id = data['shipping_method_id']
+            quantity           = data['quantity']
+            
+            if not (product_id and shipping_method_id and quantity):
+                return JsonResponse({'message':'Empty Data'}, status=400)
+            
+            user               = request.user
+            product            = Product.objects.filter(id=product_id).first() 
+            shipping_method    = ShippingMethod.objects.filter(id=shipping_method_id).first()
+    
+            if not product:
+                return JsonResponse({'message':'UNKOWN_PRODUCT'}, status=400)
+
+            if not shipping_method:
+                return JsonResponse({'message':'INVALID_Shipping_Method'}, status=400)
+
+            if OrderStatus.objects.filter(id=1):
+                with transaction.atomic():
+                    order, is_created              = Order.objects.get_or_create(
+                        user_id=user.id, order_status_id=1
+                    )
+                
+                    cart, is_created               = Cart.objects.get_or_create(
+                        order=order, product=product
+                    )
+
+                    if not is_created:
+                        cart.quantity             += quantity
+                        cart.order.total_quantity += cart.quantity
+                        cart.order.total_price    += cart.product.price * cart.quantity
+                    else:
+                        cart.quantity              = quantity
+                        cart.order.total_quantity  = cart.quantity
+                        cart.order.total_price     = cart.product.price * cart.quantity
+                        cart.order.shipping_method = shipping_method
+                        cart.order.shipping_price  = 3500
+            
+                    order.save()
+                    cart.save()
+            else:
+                return JsonResponse({'message':'INPUT_Order_Status Data'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'message':'JSON_Decode_Error'}, status=400)
+        
+        return JsonResponse({'message' : 'SUCCESS'}, status=200)
+
 class BasketAddressView(View):
     @login_required
     def get(self, request):
