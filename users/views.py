@@ -5,15 +5,19 @@ import json
 import string
 import random
 
-from django.http import JsonResponse
-from django.views import View
-from django.db import transaction
-from django.views import View
-from django.http import JsonResponse
+from django.db        import transaction
+from django.views     import View
+from django.http      import JsonResponse
 from django.db.models import Q
-from django.core.mail     import EmailMessage
+from django.core.mail import EmailMessage
 
-from users.models import User, Address, Review, UserLike, Comment
+from users.models     import User, Address, Review, UserLike, Comment
+from products.models  import (
+    Product,Category,
+    SubCategory,Allergy,
+    ProductInformation,AllergyProduct,
+    DiscountRate,Sticker)
+from users.decorators import login_required
 
 
 class FindIdView(View):
@@ -182,3 +186,85 @@ class SignupCheckView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
+
+class ReviewView(View):
+    @login_required
+    def post(self,request,product_id=None):
+        result = False
+
+        try:
+            data   = json.loads(request.body)
+            review = data['review']
+            user   = request.user
+            orders = user.order_set.filter(order_status_id=3)
+
+            if not product_id or not Product.objects.filter(id=product_id).exists():
+                return JsonResponse({'MESSAGE':'PRODUCT_DOES_NOT_EXIST'},status=400)
+
+            if not review:
+                return JsonResponse({'MESSAGE':'INVALID_REVIEW'},status=400)
+
+            if not orders:
+                return JsonResponse({'MESSAGE':'INVALID_USER'},status=400)
+
+            for order in orders:
+                if order.cart_set.filter(product_id=product_id).exists():
+                    result = True
+                    break
+
+            if not result:
+                return JsonResponse({'MESSAGE':'INVALID_USER'}, status=400)
+
+            Review.objects.create(
+                user   = user,
+                review = review,
+                order  = order
+            )
+
+            return JsonResponse({'MESSAGE':'SUCCESS'},status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'MESSAGE':'JSON_DECODE_ERROR'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
+
+    def get(self,request,product_id=None):
+
+        if not product_id or not Product.objects.filter(id=product_id).exists():
+            return JsonResponse({'MESSAGE': 'PRODUCT_DOES_NOT_EXIST'}, status=400)
+
+        reviews = Review.objects.filter(product_id=product_id)
+
+        results = [
+            {
+                'ID'         : review.user.identification,
+                'created_at' : review.created_at.strftime('%Y-%m-%d'),
+                'review'     : review.review
+
+            } for review in reviews]
+
+        return JsonResponse({'RESULTS':results}, status=200)
+
+    @login_required
+    def delete(self,request,product_id=None):
+
+        try:
+            if not product_id or not Product.objects.filter(id=product_id).exists():
+                return JsonResponse({'MESSAGE': 'PRODUCT_DOES_NOT_EXIST'}, status=400)
+
+            data         = json.loads(request.body)
+            review_id    = data['review_id']
+            user         = request.user
+            review_check = Review.objects.filter(id=review_id, user=user).exists()
+
+            if not review_check:
+                return JsonResponse({'MESSAGE':'INVALID_REQUEST'}, status=400)
+
+            Review.objects.filter(id=review_id, user=user).delete()
+
+            return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'MESSAGE':'JSON_DECODE_ERROR'}, status=400)
+

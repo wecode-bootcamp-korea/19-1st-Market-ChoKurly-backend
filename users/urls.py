@@ -1,6 +1,9 @@
 from django.urls import path
 
-from users.views import FindIdView,UserView,FindPasswordView,LoginView,SignupCheckView
+from users.views import (
+    FindIdView,UserView,
+    FindPasswordView,LoginView,
+    SignupCheckView,ReviewView)
 
 urlpatterns = [
     path('/find-id', FindIdView.as_view()),
@@ -8,4 +11,6 @@ urlpatterns = [
     path('/find-password', FindPasswordView.as_view()),
     path('/signin', LoginView.as_view()),
     path('/signup-check', LoginView.as_view()),
+    path('/review/<int:product_id>', ReviewView.as_view()),
+
 ]
