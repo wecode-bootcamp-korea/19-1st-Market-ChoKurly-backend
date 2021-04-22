@@ -1,12 +1,16 @@
 import json
+import jwt
+import my_settings
 
 from .models            import Order, ShippingMethod,OrderStatus,Cart,PaymentType
-from users.models       import User
+from users.models       import User, Address
 from users.decorators   import login_required
+from products.models    import Product
 
 from django.db.models   import Q
 from django.http        import JsonResponse
 from django.views       import View
+from django.db          import transaction
 
 class OrderformView(View):
     @login_required
@@ -62,3 +66,37 @@ class OrderDetailView(View):
             return JsonResponse({'result':result}, status=200)
 
         return JsonResponse({'MESSAGE':False}, status=400)
+
+class BasketView(View):
+    @login_required
+    def get(self, request):
+        user                   = request.user
+        order                  = Order.objects.filter(Q(user_id=user.id) & Q(order_status=1)).first()
+        cart_list              = order.cart_set.all() if order else None
+
+        result                 = [{
+            'id'                   : '1',
+            'user_id'              : user.id,
+            'cart_product_info'    : [{
+                'id'                : '{}'.format(i+1),
+                'product_id'        : cart_list[i].product.id,
+                'name'              : cart_list[i].product.name,
+                'price'             : cart_list[i].product.price * cart_list[i].quantity,
+                'quantity'          : cart_list[i].quantity,
+                'thumbnail_image'   : cart_list[i].product.thumbnail_image
+            } for i in range(len(cart_list))] if cart_list else None
+        }]
+        return JsonResponse({'result' : result}, status=200)
+
+class BasketAddressView(View):
+    @login_required
+    def get(self, request):
+        user    = request.user
+        
+        result  = [{
+            'address' : Address.objects.filter(
+                Q(user_id=user.id) & Q(is_default=True)).first().address
+        }]
+        return JsonResponse({'result' : result}, status=200)
+
+
