@@ -88,6 +88,93 @@ class BasketView(View):
         }]
         return JsonResponse({'result' : result}, status=200)
 
+    @login_required
+    def post(self, request):
+        try:
+            data               = json.loads(request.body)
+            product_id         = data['product_id']
+            shipping_method_id = data['shipping_method_id']
+            quantity           = data['quantity']
+            
+            if not (product_id and shipping_method_id and quantity):
+                return JsonResponse({'message':'Empty Data'}, status=400)
+            
+            user               = request.user
+            product            = Product.objects.filter(id=product_id).first() 
+            shipping_method    = ShippingMethod.objects.filter(id=shipping_method_id).first()
+            order              = Order.objects.filter(
+                    Q(user_id=user.id) & 
+                    Q(order_status_id=1)
+                    ).first()  
+
+            if not product:
+                return JsonResponse({'message':'UNKOWN_PRODUCT'}, status=400)
+
+            if not shipping_method:
+                return JsonResponse({'message':'INVALID_Shipping_Method'}, status=400)
+
+            if not order:                  # 주문 정보가 없는 경우
+                with transaction.atomic():
+                    order = Order(
+                        shipping_price   = 3500.00,
+                        user             = user,
+                        order_status_id  = 1 
+                        shipping_method  = shipping_method,
+                    )
+ 
+                    order.save()
+
+                    cart = Cart(
+                        product          = product,
+                        order_id         = order.id,
+                        quantity         = quantity
+                    )
+
+                    order.total_quantity = cart.quantity
+                    order.total_price    = cart.product.price * cart.quantity
+
+                    order.save()
+                    cart.save()
+            
+            else:                     # 해당 유저가 처음 주문한 상품이 아닌 경우
+                befor_created_cart = Cart.objects.filter(
+                        Q(product_id=product_id) & 
+                        Q(order_id=order.id)
+                    ).first()
+
+                if befor_created_cart:
+                    with transaction.atomic():
+                        befor_created_cart.quantity += quantity
+
+                        befor_created_cart.save()
+
+                        order.total_price           += befor_created_cart.product.price * quantity
+                        order.total_quantity        += quantity
+
+                        order.save()
+                else:                    # 해당 유저가 처음 주문한 상품인 경우
+                    with transaction.atomic():
+                        cart = Cart(
+                            product                  = product,
+                            order_id                 = order.id,
+                            quantity                 = quantity
+                        )
+            
+                        cart.save()
+                     
+                        order.total_price           += cart.product.price * cart.quantity
+                        order.total_quantity        += cart.quantity
+                    
+                        order.save()
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'message':'JSON_Decode_Error'}, status=400)
+        
+        return JsonResponse({'message' : 'SUCCESS'}, status=200)
+
 class BasketAddressView(View):
     @login_required
     def get(self, request):
