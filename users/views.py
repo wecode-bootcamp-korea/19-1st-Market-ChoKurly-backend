@@ -189,7 +189,7 @@ class SignupCheckView(View):
 
 class ReviewView(View):
     @login_required
-    def post(self,request,product_id):
+    def post(self,request,product_id=None):
         result = False
 
         try:
@@ -197,6 +197,9 @@ class ReviewView(View):
             review = data['review']
             user   = request.user
             orders = user.order_set.filter(order_status_id=3)
+
+            if not product_id:
+                return JsonResponse({'MESSAGE':'INVALID_PRODUCT_ID'},status=400)
 
             if not review:
                 return JsonResponse({'MESSAGE':'INVALID_REVIEW'},status=400)
@@ -226,7 +229,7 @@ class ReviewView(View):
         except KeyError:
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
 
-    def get(self,request,product_id):
+    def get(self,request,product_id=None):
 
         if not product_id:
             return JsonResponse({'MESSAGE':'INVALID_PRODUCT_ID'}, status=400)
@@ -244,9 +247,12 @@ class ReviewView(View):
         return JsonResponse({'RESULTS':results}, status=200)
 
     @login_required
-    def delete(self,request,product_id):
+    def delete(self,request,product_id=None):
 
         try:
+            if not product_id:
+                return JsonResponse({'MESSAGE':'INVALID_PRODUCT_ID'},status=404)
+
             data         = json.loads(request.body)
             review_id    = data['review_id']
             user         = request.user
