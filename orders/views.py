@@ -154,4 +154,45 @@ class BasketAddressView(View):
         }]
         return JsonResponse({'result' : result}, status=200)
 
+class BasketQuantityView(View):
+    @login_required
+    def post(self, request):
+        try:
+            data               = json.loads(request.body)
+            user               = request.user
+            product_id         = data['product_id']
+            add                = data['is_add']
 
+            if not product_id:
+                return JsonResponse({'message':'INPUT product_id'}, status=400)
+
+            if add is None or type(add) == type('string'):
+                return JsonResponse({'message':'INPUT ADD OR DECRESE'}, status=400)
+
+            order              = Order.objects.filter(user_id=user.id).first()
+            cart               = order.cart_set.filter(product_id=product_id).first() if order else None
+
+            if not order:
+                return JsonResponse({'message':'UNVALID ORDER'}, status=400)
+            
+            if not cart:
+                return JsonResponse({'message':'EMPTY CART'}, status=400)
+
+            with transaction.atomic():
+
+                cart.quantity              = cart.quantity + 1 if add else cart.quantity-1
+
+                cart.save()               
+
+                cart.order.total_quantity  = cart.order.totla_quantity + 1 if add else cart.order.total_quantity - 1
+                cart.order.total_price     = cart.order.total_price + cart.product.price if add else cart.order.total_price -cart.product.price
+
+                cart.order.save()
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'message':'JSON_Decode_Error'}, status=400)
+ 
+        return JsonResponse({'message':'SUCCESS'}, status=200)
