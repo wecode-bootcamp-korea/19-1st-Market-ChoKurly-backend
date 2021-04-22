@@ -276,17 +276,16 @@ class UserLikeView(View):
         if not product_id:
             return JsonResponse({'MESSAGE':'INVALID_PRODUCT_ID'}, status=400)
 
-        user       = request.user
-        user_check = UserLike.objects.filter(user=user, product=product_id).exists()
-        like_count = UserLike.objects.filter(product=product_id).count()
-        product    = Product.objects.get(id=product_id)
+        user = request.user
+        like, like_check = UserLike.objects.get_or_create(user=user,product=product_id)
 
-        if not user_check:
-            user.product.add(product)
-            user.save()
-            like_count += 1
-            return JsonResponse({'RESULTS':like_count}, status=200)
+        if not like_check:
+            if like.is_like:
+                like.is_like = False
+            else:
+                like.is_like = True
 
-        UserLike.objects.filter(user=user, product=product).delete()
-        like_count -= 1
-        return JsonResponse({'RESULTS':like_count}, status=200)
+        like.save()
+        total = UserLike.objects.filter(product=product_id, is_like=True).count()
+
+        return JsonResponse({'RESULTS': total}, status=200)
