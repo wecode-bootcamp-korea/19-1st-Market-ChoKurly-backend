@@ -199,7 +199,7 @@ class ReviewView(View):
             orders = user.order_set.filter(order_status_id=3)
 
             if not product_id or not Product.objects.filter(id=product_id).exists():
-                return JsonResponse({'MESSAGE':'INVALID_REQUEST'},status=400)
+                return JsonResponse({'MESSAGE':'PRODUCT_DOES_NOT_EXIST'},status=400)
 
             if not review:
                 return JsonResponse({'MESSAGE':'INVALID_REVIEW'},status=400)
@@ -232,7 +232,7 @@ class ReviewView(View):
     def get(self,request,product_id=None):
 
         if not product_id or not Product.objects.filter(id=product_id).exists():
-            return JsonResponse({'MESSAGE': 'INVALID_REQUEST'}, status=400)
+            return JsonResponse({'MESSAGE': 'PRODUCT_DOES_NOT_EXIST'}, status=400)
 
         reviews = Review.objects.filter(product_id=product_id)
 
@@ -251,7 +251,7 @@ class ReviewView(View):
 
         try:
             if not product_id or not Product.objects.filter(id=product_id).exists():
-                return JsonResponse({'MESSAGE': 'INVALID_REQUEST'}, status=400)
+                return JsonResponse({'MESSAGE': 'PRODUCT_DOES_NOT_EXIST'}, status=400)
 
             data         = json.loads(request.body)
             review_id    = data['review_id']
