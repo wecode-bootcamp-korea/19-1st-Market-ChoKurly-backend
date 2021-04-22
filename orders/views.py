@@ -66,3 +66,54 @@ class OrderDetailView(View):
             return JsonResponse({'result':result}, status=200)
 
         return JsonResponse({'MESSAGE':False}, status=400)
+
+class BasketView(View):
+    @login_required
+    def get(self, request):
+        try:         
+            user_id                = request.users.first().id
+
+            if not user_id:
+                return JsonResponse({'message':'INVALID_USER_ID'}, status=400)
+            
+            address                = Address.objects.filter(
+                Q(user_id=user_id) & Q(is_default=True)
+            )
+
+            if not address:
+                return JsonResponse({'message':'UNKOWN_USER'}, status=400)
+
+            order                  = Order.objects.filter(user_id=user_id).first()
+            
+            if order:
+                cart_list          = Cart.objects.filter(order_id=order.id)
+                cart_product_info  = [{
+                    'id'              : '{}'.format(i+1),
+                    'product_id'      : cart_list[i].product.id,
+                    'name'            : cart_list[i].product.name,
+                    'price'           : cart_list[i].product.price * cart_list[i].quantity,
+                    'quantity'        : cart_list[i].quantity,
+                    'thumbnail_image' : cart_list[i].product.thumbnail_image
+                } for i in range(len(cart_list))]
+
+                result             = [{
+                    'id'                   : '1',
+                    'user_id'              : user_id,
+                    'address'              : address.first().address,
+                    'cart_product_info'    : cart_product_info
+                }]
+            else:
+                result             = [{
+                    'id'                   : '1',
+                    'user_id'              : user_id,
+                    'address'              : address.first().address,  
+                    'cart_product_info'    : order
+                }]
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'message':'JSON_Decode_Error'}, status=400)
+        
+        return JsonResponse({'result' : result}, status=200)
