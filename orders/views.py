@@ -70,24 +70,33 @@ class OrderDetailView(View):
 class BasketView(View):
     @login_required
     def get(self, request):
-        try:
-            user                   = request.user
-            address                = Address.objects.filter(
-                Q(user_id=user.id) & Q(is_default=True)
-            )
+        user                   = request.user
+        order                  = Order.objects.filter(Q(user_id=user.id) & Q(order_status=1)).first()
+        cart_list              = order.cart_set.all() if order else None
 
-            order                  = Order.objects.filter(Q(user_id=user.id) & Q(order_status=1)).first()
-            cart_list              = order.cart_set.all() if order else None
+        result                 = [{
+            'id'                   : '1',
+            'user_id'              : user.id,
+            'cart_product_info'    : [{
+                'id'                : '{}'.format(i+1),
+                'product_id'        : cart_list[i].product.id,
+                'name'              : cart_list[i].product.name,
+                'price'             : cart_list[i].product.price * cart_list[i].quantity,
+                'quantity'          : cart_list[i].quantity,
+                'thumbnail_image'   : cart_list[i].product.thumbnail_image
+            } for i in range(len(cart_list))] if cart_list else None
+        }]
+        return JsonResponse({'result' : result}, status=200)
 
-            result                 = [{
-                'id'                   : '1',
-                'user_id'              : user.id,
-                'cart_product_info'    : [{
-                    'id'                : '{}'.format(i+1),
-                    'product_id'        : cart_list[i].product.id,
-                    'name'              : cart_list[i].product.name,
-                    'price'             : cart_list[i].product.price * cart_list[i].quantity,
-                    'quantity'          : cart_list[i].quantity,
-                    'thumbnail_image'   : cart_list[i].product.thumbnail_image
-                } for i in range(len(cart_list))] if cart_list else None
-            }]
+class BasketAddressView(View):
+    @login_required
+    def get(self, request):
+        user    = request.user
+        
+        result  = [{
+            'address' : Address.objects.filter(
+                Q(user_id=user.id) & Q(is_default=True)).first().address
+        }]
+        return JsonResponse({'result' : result}, status=200)
+
+
