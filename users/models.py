@@ -35,6 +35,7 @@ class Review(models.Model):
 class UserLike(models.Model):
     user                = models.ForeignKey('User', on_delete = models.CASCADE)
     product             = models.ForeignKey('products.Product', on_delete = models.CASCADE)
+    is_like             = models.BooleanField(default=False)
 
     class Meta:
         db_table    =   'user_likes'
