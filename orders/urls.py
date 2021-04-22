@@ -1,4 +1,4 @@
-from .views         import OrderformView, OrderDetailView, BasketView, BasketAddressView
+from .views         import OrderformView, OrderDetailView, BasketView, BasketAddressView, BasketQuantityView
 from django.urls    import path
 
 urlpatterns=[
@@ -6,4 +6,5 @@ urlpatterns=[
         path('/order-details',OrderformView.as_view()),
         path('/basket', BasketView.as_view()),
         path('/basket-address', BasketAddressView.as_view()),
+        path('/basket-quantity', BasketQuantityView.as_view())
         ]
