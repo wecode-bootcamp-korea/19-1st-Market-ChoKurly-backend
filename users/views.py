@@ -268,3 +268,25 @@ class ReviewView(View):
         except json.JSONDecodeError:
             return JsonResponse({'MESSAGE':'JSON_DECODE_ERROR'}, status=400)
 
+class UserLikeView(View):
+    @login_required
+    def get(self,request):
+        product_id = request.GET.get('product_id')
+
+        if not product_id:
+            return JsonResponse({'MESSAGE':'INVALID_PRODUCT_ID'}, status=400)
+
+        user       = request.user
+        user_check = UserLike.objects.filter(user=user, product=product_id).exists()
+        like_count = UserLike.objects.filter(product=product_id).count()
+        product    = Product.objects.get(id=product_id)
+
+        if not user_check:
+            user.product.add(product)
+            user.save()
+            like_count += 1
+            return JsonResponse({'RESULTS':like_count}, status=200)
+
+        UserLike.objects.filter(user=user, product=product).delete()
+        like_count -= 1
+        return JsonResponse({'RESULTS':like_count}, status=200)
