@@ -163,7 +163,7 @@ class LoginView(View):
             if not identification:
                 return JsonResponse({'MESSAGE':'INVALID_ID_ERROR'}, status=401)
         
-            if not bcrypt.checkpw(password.encode('utf-8'), identification.password.encode('utf-8') ):
+            if not bcrypt.checkpw(password.encode('utf-8'), identification.password.encode('utf-8')):
                 return JsonResponse({'MESSAGE':'INVALID_PW_ERROR'}, status=401)
             
             encoded_jwt = jwt.encode({'user id': identification.id}, my_settings.SECRET['secret'], algorithm = 'HS256')
