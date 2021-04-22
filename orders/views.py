@@ -41,3 +41,24 @@ class OrderformView(View):
             return JsonResponse({'result':result}, status=200)   
 
         return JsonResponse({'MESSAGE':'Don\'t have anything to order'}, status=400)
+
+class OrderDetailView(View):
+    @login_required
+    def post(self,request):
+        
+        if Order.objects.filter(Q(user_id=request.user) & Q(order_status_id = 3)).exists():
+
+            orders = Order.objects.filter(user_id=request.user)
+
+            result=[
+                {'order_id':order.id,
+                'order_date':order.updated_at,
+                'total_price':order.total_price, 
+                'products':order.cart_set.first().product.name,
+                'delivery_status':order.delivery_status.name,
+                'products_thumbnail':order.cart_set.first().product.thumbnail_image,
+                }for order in orders]
+
+            return JsonResponse({'result':result}, status=200)
+
+        return JsonResponse({'MESSAGE':False}, status=400)
