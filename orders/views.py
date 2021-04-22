@@ -81,7 +81,8 @@ class BasketView(View):
                 'id'                : '{}'.format(i+1),
                 'product_id'        : cart_list[i].product.id,
                 'name'              : cart_list[i].product.name,
-                'price'             : cart_list[i].product.price * cart_list[i].quantity,
+                'price'             : cart_list[i].product.price,
+                'discount_rate'     : cart_list[i].product.discount_rate.discount_rate,
                 'quantity'          : cart_list[i].quantity,
                 'thumbnail_image'   : cart_list[i].product.thumbnail_image
             } for i in range(len(cart_list))] if cart_list else None
