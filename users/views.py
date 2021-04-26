@@ -28,7 +28,7 @@ class FindIdView(View):
             name = data['name']
             email = data['email']
 
-            if not my_settings.EMAIL_CHECK.match(email):
+            if not my_settings.email_check.match(email):
                 return JsonResponse({'MESSAGE': 'EMAIL_TYPE_ERROR'}, status=400)
 
             if not User.objects.filter(Q(name=name) & Q(email=email)).exists():
@@ -50,11 +50,11 @@ class UserView(View):
             data = json.loads(request.body)
             LENGTH = 0
             identification = data['id']
-            password = data['password']
+            password = data['pw']
             name = data['name']
             email = data['email']
-            phone_number = data['phone_number']
-            birth_date = data['birthdate']
+            phone_number = data['mobile']
+            birth_date = data['birth']
             gender = data['gender']
             address = data['address']
 
@@ -105,7 +105,7 @@ class UserView(View):
                 user_address = Address.objects.create(
                     address=address,
                     user=user,
-                    is_default=data['is_defalut'])
+                    is_default=1)
 
                 user_address.save()
 
@@ -180,9 +180,9 @@ class SignupCheckView(View):
             identification      = data.get('id','')
 
             if not User.objects.filter(Q(identification = identification)| Q(email = email)).exists():
-                return JsonResponse({'MESSAGE':True}, status=200)
+                return JsonResponse({'MESSAGE':False}, status=200)
                 
-            return JsonResponse({'MESSAGE':False}, status=200)
+            return JsonResponse({'MESSAGE':True}, status=200)
 
         except KeyError:
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
