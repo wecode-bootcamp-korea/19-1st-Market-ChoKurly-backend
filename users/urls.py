@@ -11,7 +11,7 @@ urlpatterns = [
     path('/signup', UserView.as_view()),
     path('/find-password', FindPasswordView.as_view()),
     path('/signin', LoginView.as_view()),
-    path('/signup-check', LoginView.as_view()),
+    path('/signup-check', SignupCheckView.as_view()),
     path('/review/<int:product_id>', ReviewView.as_view()),
     path('/user-like', UserLikeView.as_view())
 
