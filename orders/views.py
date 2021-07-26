@@ -112,26 +112,31 @@ class BasketView(View):
 
             if OrderStatus.objects.filter(id=1):
                 with transaction.atomic():
-                    order, is_created              = Order.objects.get_or_create(
+                    order, order_is_created              = Order.objects.get_or_create(
                         user_id=user.id, order_status_id=1
                     )
                 
-                    cart, is_created               = Cart.objects.get_or_create(
+                    cart, cart_is_created               = Cart.objects.get_or_create(
                         order=order, product=product
                     )
 
-                    if not is_created:
+                    if not cart_is_created:
                         cart.quantity             += quantity
-                        cart.order.total_quantity += cart.quantity
-                        cart.order.total_price    += cart.product.price * cart.quantity
+                        cart.order.total_quantity += quantity
+                        cart.order.total_price    += cart.product.price * quantity
                     else:
-                        cart.quantity              = quantity
-                        cart.order.total_quantity  = cart.quantity
-                        cart.order.total_price     = cart.product.price * cart.quantity
-                        cart.order.shipping_method = shipping_method
-                        cart.order.shipping_price  = 3500
-            
-                    order.save()
+                        if order_is_created:
+                            cart.quantity              = quantity
+                            cart.order.total_quantity  = quantity
+                            cart.order.total_price     = cart.product.price * quantity
+                            cart.order.shipping_method = shipping_method
+                            cart.order.shipping_price  = 3300                      
+                        else:
+                            cart.quantity              = quantity
+                            cart.order.total_quantity += quantity
+                            cart.order.total_price    += cart.product.price * quantity
+
+                    cart.order.save()
                     cart.save()
             else:
                 return JsonResponse({'message':'INPUT_Order_Status Data'}, status=400)
@@ -183,11 +188,10 @@ class BasketQuantityView(View):
 
                 cart.quantity              = cart.quantity + 1 if add else cart.quantity-1
 
-                cart.save()               
-
-                cart.order.total_quantity  = cart.order.totla_quantity + 1 if add else cart.order.total_quantity - 1
+                cart.order.total_quantity  = cart.order.total_quantity + 1 if add else cart.order.total_quantity - 1
                 cart.order.total_price     = cart.order.total_price + cart.product.price if add else cart.order.total_price -cart.product.price
-
+                
+                cart.save()  
                 cart.order.save()
 
         except KeyError:
