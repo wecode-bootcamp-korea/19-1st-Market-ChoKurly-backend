@@ -71,7 +71,7 @@ class BasketView(View):
     @login_required
     def get(self, request):
         user                   = request.user
-        order                  = Order.objects.filter(Q(user_id=user.id) & Q(order_status=1)).first()
+        order                  = Order.objects.filter(user_id=user.id, order_status=1).first()
         cart_list              = order.cart_set.all() if order else None
 
         result                 = [{
@@ -156,7 +156,7 @@ class BasketAddressView(View):
         
         result  = [{
             'address' : Address.objects.filter(
-                Q(user_id=user.id) & Q(is_default=True)).first().address
+                user_id=user.id, is_default=True).first().address
         }]
         return JsonResponse({'result' : result}, status=200)
 
