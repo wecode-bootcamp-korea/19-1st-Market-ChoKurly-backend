@@ -135,10 +135,10 @@ class BasketView(View):
                         else:
                             cart.quantity              = quantity
                             cart.order.total_quantity += quantity
-                            cart.order.total_price    += cart.product.price * quantity
-
-                    cart.order.save()
+                            cart.order.total_price    += cart.product.price * quantity    
+                                           
                     cart.save()
+                    cart.order.save()
             else:
                 return JsonResponse({'message':'INPUT_Order_Status Data'}, status=400)
 
